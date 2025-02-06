@@ -1,0 +1,67 @@
+\documentclass[a4paper, 11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[IL2]{fontenc}
+\usepackage[top=3cm, left=2cm, text={17cm, 24cm}]{geometry}
+\usepackage[hyphens]{url}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{breaklinks=true}
+\urlstyle{same}
+\usepackage{cite}
+
+%% Prikazy pro bibtex, aby nevyskakoval errror: Underfull \hbox (badness 10000) %%
+\usepackage{etoolbox}
+\apptocmd{\sloppy}{\hbadness 10000\relax}{}{}
+
+\title{proj4}
+\author{Jakub Valeš}
+\date{April 2022}
+
+\begin{document}
+    \begin{titlepage}
+        \begin{center}
+            \textsc
+            {\Huge{Vysoké učení technické v~Brně}\\[0.4em]
+            {\huge Fakulta informačních technologií}}\\
+            \vspace{\stretch{0.382}}
+            {\LARGE Typografie a~publikování \,--\, 4. projekt}\\[0.5em]
+            {\Huge Bibliografické citace}\\
+            \vspace{\stretch{0.618}}
+        \end{center}
+    {\Large \today \hfill Jakub Valeš}
+    \end{titlepage}
+
+\section{Písmo}
+    \subsection{Vývoj písma}
+        Začátek vývoje písma datujeme už v~dobách pravěku, v~této době se lidé snažili vyjádřit svá sdělení pomocí kresby\,--\,obrázkové písmo, ze kterého se později v~Egyptě vyvinuli hieroglyfy. S Postupným vývojem společnosti se vyvíjelo i~písmo, od zmíněných piktogramů, přes klínové písmo a~hláskové písmo až k~písmu Latinskému, které se vyvíjelo od 6.~století~př.~n.~l. až do Novověku.~\cite{Vaclavkova:HistorickyVyvojPisma}
+        
+        Důležitým milníkem pro rozvoj písma byla průmyslová revoluce, ve které začal prudký rozvoj tiskařského průmyslu. Později ve 20.~století začali typografové přebírat a~upravovat tyto tiskové antikvy a~dnešní počítačová sazba přebírá většinu písma právě od písařů z~20.~století.~\cite{Hanacek:JakPublikovatNaPocitaci}
+        
+    \subsection{Rozlišení tiskových písem}
+        Písma můžeme dělit podle mnoha kritérií, jedno z~těch nejzákladnějších je dělení písma podle šířky jednotlivých znaků na písma proporcionální a~neproporcionální. \textbf{Písma proporcionální} se vyznačují tím, že znaky mají přiměřenou šířku, tj. písmeno „m“ je širší a~písmeno „t“ je užší. Naopak všechny znaky \textbf{písem neproporcionálních} mají stejnou šířku.~\cite{Cvingrafova}
+        
+        Dále se ještě často setkáme s~pojmem \textbf{patkové} a~\textbf{bezpatkové písmo}. Mezi patkové písmo patří například font, kterým je psán tento dokument (Computer Modern), naopak bezpatkový font je například Helvetica.~\cite{Font:magazine}
+        
+        Důležitým pojmem je font, který značí ucelenou znakovou sadu, která může obsahovat latinku, azbuku, řecké, arabské, hebrejské písmo, ale i~číslice a~další symboly.~\cite{Janak:Pismo}
+        
+        \subsubsection{Helvetica}
+            {\fontfamily{phv}\selectfont Helvetica} je jeden z~nejpoužívanějších fontů bezpatkového písma, které v~roce 1957 vytvořili švýcarští designéři Max Miedinger a~Eduard Hoffmann.~\cite{Razdik:Helvetica} 
+            Za tu dobu prošlo písmo Helvetica postupným vývojem a~v~roce 2019 se designéři z~firmy Monotype rozhodli vytvořit novou verzi písma \emph{Helvetica Now}, ve které se pokusily obnovit kouzlo tohoto ikonického písma.~\cite{Wired:Helvetica}
+            
+            S~písmem Helvetica se setkáváme každý den, neboť se často využívá pro komerční účely a~nalezneme ho například na logu firmy Skype nebo automobilky BMW.
+            
+        \subsubsection{Times New Roman}
+            Naopak  {\fontfamily{Times New Roman}\selectfont Times New Roman} je jedním z~nejpoužívanějších patkových (serifových) písem. Vznikl jako hlavní font pro britský deník The Times v~roce 1931 typografem Stanleym Morisem.~\cite{e15:TimesNewRoman}
+            
+            Font Times New Roman mají také mnozí spojený s~firmou Microsoft a~jejich textovým procesorem MS~Word. Není divu, neboť byl zde výchozím fontem, až do roku 2007 kdy byl nahrazen fontem Calibri.~\cite{PCWorld:Times}
+    
+    \subsection{Použití v~dokumentech}
+        Pro psaní knih se nejčastěji využívá font Times Roman, nebo alternativou k~němu je Computer Modern, který je základním fontem \LaTeX u. Pro sazbu internetových článků se používají bezpatkové fonty (sans-serif).~\cite{Zobel:WritingForComputerScience}
+
+
+\newpage
+\Urlmuskip=0mu plus 1mu\relax
+\bibliographystyle{czechiso}
+\bibliography{proj4}
+
+\end{document}

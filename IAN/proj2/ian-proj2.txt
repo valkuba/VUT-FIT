@@ -1,0 +1,131 @@
+==================================================
+Řešení projektu č.2 z předmětu IAN: Nástroj crash
+Autor: Jakub Valeš, xvales04
+Datum: 24.3.2024
+==================================================
+$ crash vmlinux vmcore_p2
+      KERNEL: vmlinux
+    DUMPFILE: vmcore_p2  [PARTIAL DUMP]
+        CPUS: 4
+        DATE: Wed Mar 23 15:02:26 CET 2022
+      UPTIME: 04:50:50
+LOAD AVERAGE: 0.00, 0.00, 0.00
+       TASKS: 186
+    NODENAME: rhel8-student-temp
+     RELEASE: 4.18.0-348.12.2.el8_5.x86_64
+     VERSION: #1 SMP Mon Jan 17 07:06:06 EST 2022
+     MACHINE: x86_64  (2095 Mhz)
+      MEMORY: 2 GB
+       PANIC: "Kernel panic - not syncing: Out of memory: system-wide panic_on_oom is enabled"
+         PID: 2359
+     COMMAND: "stress"
+        TASK: ff38963f46e65ac0  [THREAD_INFO: ff38963f46e65ac0]
+         CPU: 0
+       STATE: TASK_RUNNING (PANIC)
+
+Hned po spuštění programu crash zjišťujeme, že paniku zapříčinilo CPU č.0 kvůli programu "stress" s PID "2359". 
+Z panic message vyčteme, že panika byla spuštěna kvůli nedostatku paměti, tedy nejspíše příkaz "stress" požadoval po systému místo v paměti, kterou již zařízení mělo plnou.
+--------------------------------------------------------
+crash> bt
+PID: 2359   TASK: ff38963f46e65ac0  CPU: 0   COMMAND: "stress"
+ #0 [ff41a7a440acfa38] machine_kexec at ffffffff9e6635ce
+ #1 [ff41a7a440acfa90] __crash_kexec at ffffffff9e79d6bd
+ #2 [ff41a7a440acfb58] panic at ffffffff9e6eb227
+ #3 [ff41a7a440acfbd8] out_of_memory.cold.35 at ffffffff9e87e6f1
+ #4 [ff41a7a440acfc18] __alloc_pages_slowpath at ffffffff9e8d4825
+ #5 [ff41a7a440acfd10] __alloc_pages_nodemask at ffffffff9e8d4beb
+ #6 [ff41a7a440acfd70] alloc_pages_vma at ffffffff9e8ef414
+ #7 [ff41a7a440acfdb0] do_anonymous_page at ffffffff9e8b1077
+ #8 [ff41a7a440acfde8] __handle_mm_fault at ffffffff9e8b7336
+ #9 [ff41a7a440acfe98] handle_mm_fault at ffffffff9e8b742e
+#10 [ff41a7a440acfec0] __do_page_fault at ffffffff9e674f5d
+#11 [ff41a7a440acff20] do_page_fault at ffffffff9e675267
+#12 [ff41a7a440acff50] page_fault at ffffffff9f00111e
+    RIP: 000056525428d210  RSP: 00007ffe41cb9f40  RFLAGS: 00010206
+    RAX: 000000000841a000  RBX: 0000000000000000  RCX: 00007fb13e034010
+    RDX: 0000000000000000  RSI: 0000000010001000  RDI: 0000000000000000
+    RBP: 00007fb13e034010   R8: 00000000ffffffff   R9: 0000000000000000
+    R10: 0000000000000022  R11: 0000000000000246  R12: 0000000000001000
+    R13: 000056525428f004  R14: 0000000000000002  R15: 0000000010000000
+    ORIG_RAX: ffffffffffffffff  CS: 0033  SS: 002b
+
+Příkaz bt vypsal backtrace procesu, který zapříčinil paniku kernelu. Vidíme, že proces vyvolal page_fault výjimku, což znamená, že potřeboval přistoupit k paměti, 
+kterou má virtuálně alokovanou, ale ještě tato paměťová stránka není načtená v paměti.
+
+page_fault postupně přistupoval k funkcím, které se snažily najít volnou paměťovou stránku, až došel k funkci __alloc_pages_slowpath, 
+která řeší hledání místa přes compaction algoritmus, neboli snaží se přeskládat menší order bloky paměti na větší, ale nejspíše ani tato funkce neuspěla a vyvolala out_of_memory.
+--------------------------------------------------------
+crash> log | less
+...
+[17449.672980] Kernel panic - not syncing: Out of memory: system-wide panic_on_oom is enabled
+
+[17449.674316] CPU: 0 PID: 2359 Comm: stress Kdump: loaded Not tainted 4.18.0-348.12.2.el8_5.x86_64 #1
+[17449.675333] Hardware name: Red Hat Container-native virtualization/RHEL-AV, BIOS 1.14.0-1.module+el8.4.0+8855+a9e237a9 04/01/2014
+[17449.676885] Call Trace:
+[17449.677430]  dump_stack+0x5c/0x80
+[17449.678024]  panic+0xe7/0x2a9
+[17449.678587]  out_of_memory.cold.35+0x2f/0x7e
+[17449.679233]  __alloc_pages_slowpath+0xbe5/0xcd0
+[17449.679903]  __alloc_pages_nodemask+0x2db/0x310
+[17449.680568]  alloc_pages_vma+0x74/0x1d0
+[17449.681177]  do_anonymous_page+0x77/0x310
+[17449.681801]  __handle_mm_fault+0x7e6/0x820
+[17449.682433]  ? __switch_to_asm+0x41/0x70
+[17449.683045]  handle_mm_fault+0xbe/0x1e0
+[17449.683655]  __do_page_fault+0x1ed/0x4c0
+[17449.684263]  do_page_fault+0x37/0x130
+[17449.684854]  ? page_fault+0x8/0x30
+[17449.685421]  page_fault+0x1e/0x30
+[17449.685983] RIP: 0033:0x56525428d210
+[17449.686572] Code: Unable to access opcode bytes at RIP 0x56525428d1e6.
+[17449.687373] RSP: 002b:00007ffe41cb9f40 EFLAGS: 00010206
+[17449.688084] RAX: 000000000841a000 RBX: 0000000000000000 RCX: 00007fb13e034010
+[17449.688942] RDX: 0000000000000000 RSI: 0000000010001000 RDI: 0000000000000000
+[17449.689795] RBP: 00007fb13e034010 R08: 00000000ffffffff R09: 0000000000000000
+[17449.690650] R10: 0000000000000022 R11: 0000000000000246 R12: 0000000000001000
+[17449.691503] R13: 000056525428f004 R14: 0000000000000002 R15: 0000000010000000
+
+Z logu se dozvíme, že program stress vyvolal paniku panic_on_oom.
+--------------------------------------------------------
+crash> ps aux
+   PID    PPID  CPU       TASK        ST  %MEM     VSZ    RSS  COMM
+crash> ps | grep "stress"
+   2348   2287   1  ff38963f73d28000  IN   0.0    7984    104  stress
+   2349   2348   2  ff38963f46c00000  IN  25.0  532276 524388  stress
+   2350   2348   1  ff38963f48800000  IN  25.0  532276 524388  stress
+   2358   2287   1  ff38963f73d29e40  IN   0.0    7984    104  stress
+>  2359   2358   0  ff38963f46e65ac0  RU   6.5  270132 135372  stress
+   2360   2358   2  ff38963f41920000  UN   4.1  270132  85008  stress
+>  2361   2358   2  ff38963f54a35ac0  RU   8.1  270132 170676  stress
+>  2362   2358   1  ff38963f419d5ac0  RU   7.9  270132 165616  stress
+
+Z výpisu ps si můžeme všimnout, že program stress běžel na více CPU a zabíral značnou část paměti.
+--------------------------------------------------------
+crash> kmem -i
+                 PAGES        TOTAL      PERCENTAGE
+    TOTAL MEM   464508       1.8 GB         ----
+         FREE    12961      50.6 MB    2% of TOTAL MEM
+         USED   451547       1.7 GB   97% of TOTAL MEM
+       SHARED     1615       6.3 MB    0% of TOTAL MEM
+      BUFFERS        0            0    0% of TOTAL MEM
+       CACHED     2265       8.8 MB    0% of TOTAL MEM
+         SLAB     8339      32.6 MB    1% of TOTAL MEM
+
+   TOTAL HUGE        0            0         ----
+    HUGE FREE        0            0    0% of TOTAL HUGE
+
+   TOTAL SWAP        0            0         ----
+    SWAP USED        0            0    0% of TOTAL SWAP
+    SWAP FREE        0            0    0% of TOTAL SWAP
+
+ COMMIT LIMIT   232254     907.2 MB         ----
+    COMMITTED   607729       2.3 GB  261% of TOTAL LIMIT
+
+Příkaz kmem -i nám zobrazí stav paměti, ze kterého vidíme, že je využito 97% paměti. 
+Navíc je hodnota TOTAL SWAP 0 což znamená, že výše zmíněná rutina slow_path nemůže v případě nedostatku paměti přesouvat z hlavní paměti na anonymní.
+--------------------------------------------------------
+Z analýzy tedy vyplývá, že na počítači běželo několik programů stress, které zabíraly většinu paměti. V průběhu své činnosti program stress s PID 2359 požádal kernel o přiřazení nové stránky paměti,
+kernel se pokusil alokovat místo v paměti pro danou stránku, ale systém již neměl dostatek paměti a tak vyvolal paniku panic_on_oom.
+
+Panice se dalo předejít změnou konfigurace systému tak, aby se v případě nedostatku paměti nevyvolala panic_on_omm, ale nechal se kernel, aby spustil rutiny na uvolnění paměti jako je oomkill rutina, 
+která podle oomscore spuštěných programů rozhodne, který program ukončí a uvolní tím místo pro daný proces. Další variantou je vyměnit RAM paměť systému za větší, čímž by se předešlo nedostatku paměti.
