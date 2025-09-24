@@ -2,6 +2,8 @@
 	path = IFJ
 	url = https://github.com/lennaaph/IFJ23
 [submodule "IIS"]
-	path = IIS_projekt
+	path = IIS/IIS_projekt
 	url = https://github.com/petr-plihal/IIS_projekt
-
+[submodule "IMS"]
+	path = IMS/courier_model
+	url = https://github.com/milantaky/courier_model
