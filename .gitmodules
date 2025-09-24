@@ -1,3 +1,7 @@
 [submodule "IFJ"]
 	path = IFJ
 	url = https://github.com/lennaaph/IFJ23
+[submodule "IIS"]
+	path = IIS
+	url = https://github.com/petr-plihal/IIS_projekt
+
