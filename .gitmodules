@@ -2,6 +2,6 @@
 	path = IFJ
 	url = https://github.com/lennaaph/IFJ23
 [submodule "IIS"]
-	path = IIS
+	path = IIS_projekt
 	url = https://github.com/petr-plihal/IIS_projekt
 
